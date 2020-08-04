@@ -11,13 +11,28 @@ FROM TB_PROFESSOR
 WHERE LENGTH(professor_name) != 3;
 
 
-
-
-
 -- 3. 남자교수의 이름 나이 출력, 나이가 적은 사람 순으로 출력
+
+SELECT PROFESSOR_NAME "교수 이름",
+        --  1. 두 날짜 개월 수로 반환 = 만나이로 계산
+        CASE WHEN TRUNC((MONTHS_BETWEEN( SYSDATE , TO_DATE (SUBSTR(PROFESSOR_SSN,1,6))))/12) < 0
+        --  2. 2049로 계산 될 조건에 걸렸을 때, 100살 더해주면 해결!
+        THEN TRUNC((MONTHS_BETWEEN( SYSDATE , TO_DATE (SUBSTR(PROFESSOR_SSN,1,6))))/12) + 100
+        ELSE TRUNC((MONTHS_BETWEEN( SYSDATE , TO_DATE (SUBSTR(PROFESSOR_SSN,1,6))))/12)
+        END "나이"
+FROM TB_PROFESSOR
+WHERE SUBSTR(PROFESSOR_SSN,8,1) = 1
+ORDER BY 나이 ASC;
+
+
+
+
+
+/*
+
 SELECT PROFESSOR_NAME "교수 이름", 
         --  1. 교수 주민번호로 출생년도 추출, 하지만 49년도의 경우, RR로 걸러낼 수 없고, 2049로 설정됨, 조건 설정 해줌
-        CASE WHEN EXTRACT(YEAR FROM (TO_DATE(SUBSTR(PROFESSOR_SSN,1,2), 'RRRR'))) > 2000 
+        CASE WHEN TO_CHAR(SYSDATE, 'YYYY') - EXTRACT(YEAR FROM (TO_DATE(SUBSTR(PROFESSOR_SSN,1,2), 'RRRR'))) < 0
         --  2. 조건에 걸렸을 때, 100살 빼주면 해결!
         THEN TO_CHAR(SYSDATE, 'YYYY') - (EXTRACT(YEAR FROM (TO_DATE(SUBSTR(PROFESSOR_SSN,1,2), 'RRRR'))) - 100)
         --  3. 그렇지 않으면, 그대로 빼주면됨.
@@ -41,6 +56,7 @@ FROM TB_PROFESSOR
 WHERE SUBSTR(PROFESSOR_SSN,8,1) = 1
 ORDER BY "나이" ASC;
 
+*/
 
 -- 4. 교수이름을 성 제외하고 출력
 
