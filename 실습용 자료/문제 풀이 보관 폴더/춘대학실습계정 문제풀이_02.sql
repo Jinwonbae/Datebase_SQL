@@ -1,0 +1,17 @@
+-- 1. 영어영문학과, 학번, 이름, 입학년도
+SELECT STUDENT_NO "학번", STUDENT_NAME "이름", ENTRANCE_DATE "입학년도"
+FROM TB_STUDENT
+WHERE DEPARTMENT_NO = '002'
+ORDER BY 이름 ASC;
+
+-- 2. 이름 세글자 아닌 교수 이름, 주민번호 출력
+
+SELECT PROFESSOR_NAME, PROFESSOR_SSN
+FROM TB_PROFESSOR
+WHERE LENGTH(professor_name) != 3;
+ -- TO_DATE(SUBSTR(PROFESSOR_SSN,1,2), 'RR')
+-- 3. 남자교수의 이름 나이 출력, 나이가 적은 사람 순으로 출력
+SELECT PROFESSOR_NAME "이름", TO_CHAR(SYSDATE, 'YYMMDD') - SUBSTR(PROFESSOR_SSN,1,6)
+FROM TB_PROFESSOR
+
+
