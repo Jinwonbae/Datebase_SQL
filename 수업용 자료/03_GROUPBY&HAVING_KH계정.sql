@@ -24,6 +24,21 @@ FROM EMPLOYEE
 GROUP BY DEPT_CODE
 ORDER BY DEPT_CODE;
 
+-- 부서별 남자가 2명 이상인 부서
+
+SELECT DEPT_CODE, COUNT(*)
+FROM EMPLOYEE
+WHERE SUBSTR(EMP_NO,8,1) = '1'
+GROUP BY DEPT_CODE
+HAVING COUNT(*) > 2;
+
+
+
+
+-- 여자 사원 수
+
+
+
 -- 각 부서별 총 급여합을 부서별 오름차순 정렬해서 조회
 SELECT DEPT_CODE, SUM(SALARY) -- 3.
 FROM EMPLOYEE       -- 1.
