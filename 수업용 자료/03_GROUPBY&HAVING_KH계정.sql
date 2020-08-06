@@ -89,11 +89,6 @@ FROM EMPLOYEE
 GROUP BY DEPT_CODE
 HAVING COUNT(BONUS) = 0;
 
-SELECT SUBSTR(EMP_NO, 8, 1), COUNT(*)
-FROM EMPLOYEE
-GROUP BY SUBSTR(EMP_NO,8,1);
-
-
 
 
 ------------------------------------------------------------------------------
