@@ -542,7 +542,7 @@ SELECT EMP_NAME, BONUS, NVL2(BONUS, 0.7, 0) "보너스 향상 적용"
 FROM EMPLOYEE;
 
 
--- * NULLIF(비교대상1, 비교대상2)
+-- * (+)(비교대상1, 비교대상2)
 -- 두개의 값 동일하면 NULL 반환
 -- 두개의 값 동일하지 않으면 비교대상 1반환
 SELECT NULLIF('123','123') FROM DUAL;
