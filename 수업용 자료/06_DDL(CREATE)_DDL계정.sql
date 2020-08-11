@@ -390,5 +390,185 @@ INSERT INTO MEM VALUES(5,'USER05','PASS05','신사임당',NULL,NULL,NULL,40);
 --> PARENT KEY를 찾을 수 없다.
 --> 40이라는 값은 MEM_GRADE 테이블 GRADE_CODE컬럼에 제공되고 있는 값이 아님
 
+
+-- 부모테이블(MEM_GRADE) -1------<- 자식테이블(MEM)   (1:N) 관계
+
 SELECT * FROM MEM;
+SELECT * FROM MEM_GRADE;
+
+-- ORACLE
+SELECT MEM_NO, MEM_ID, MEM_NAME, GRADE_NAME
+FROM MEM M, MEM_GRADE G
+WHERE M.GRADE_ID = G.GRADE_CODE(+);
+
+-- ANSI
+SELECT MEM_NO, MEM_ID, MEM_NAME, GRADE_NAME
+FROM MEM
+FULL JOIN MEM_GRADE ON (GRADE_ID = GRADE_CODE);
+
+
+--> 문제는 부모테이블(MEM-GRADE)에서 데이터 값을 삭제할 때 문제 발생!!
+SELECT * FROM MEM_GRADE;
+SELECT * FROM MEM;
+
+--> 10번 등급 삭제!, 데이터 삭제
+-- DELETE FROM 테이블명 WHERE 조건식;
+
+DELETE FROM MEM_GRADE 
+WHERE GRADE_CODE = 10;
+
+--> 자식테이블(MEM) 중에 10을 사용하고 있어서 지울수 없다!
+-- 자식테이블에 사용하고 있는 값이 있을 경우 부모테이블로부터 삭제가 안되는 "삭제 제한" 옵션 걸려있음!!
+
+DELETE FROM MEM_GRADE
+WHERE GRADE_CODE = 30;
+
+ROLLBACK;
+
+--------------------------------------------------------------------------------------------
+
+/*
+    부모테이블의 데이터 삭제시 자식테이블 값을 어떻게 처리할 건지 옵션으로 정해 둘 수 있음!!
+    언제 ? => 자식테이블 생성할 때 외래키 제약조건 부여
+    
+    * FOREING KEY 삭제 옵션
+    
+    삭제 옵션을 별도로 제시하지 않으면, 
+
+*/
+
+-- 1) ON DELETE SET NULL : 부모데이터 삭제시, 해당 데이터 사용하고 있는 자식 데이터 값을 NULL 값으로 변겅한다!!
+
+DROP TABLE MEM;
+
+CREATE TABLE MEM(
+    MEM_NO NUMBER PRIMARY KEY,
+    MEM_ID VARCHAR2(20) NOT NULL UNIQUE,
+    MEM_PWD VARCHAR2(20) NOT NULL,
+    MEM_NAME VARCHAR2(20) NOT NULL,
+    GENDER CHAR(3) CHECK (GENDER IN ('남', '여')),
+    PHONE CHAR(13),
+    EMAIL VARCHAR(50),
+    GRADE_ID NUMBER REFERENCES MEM_GRADE(GRADE_CODE) ON DELETE SET NULL
+);
+
+INSERT INTO MEM VALUES(1,'USER01','PASS01','홍길동',NULL,NULL,NULL,10);
+INSERT INTO MEM VALUES(2,'USER02','PASS02','김말똥','남',NULL,NULL,20);
+INSERT INTO MEM VALUES(3,'USER03','PASS03','이순신',NULL,NULL,NULL,10);
+INSERT INTO MEM VALUES(4,'USER04','PASS04','안중근',NULL,NULL,NULL,NULL);
+
+SELECT * FROM MEM;
+
+DELETE FROM MEM_GRADE 
+WHERE GRADE_CODE = 10;
+
+SELECT * FROM MEM_GRADE;
+
+ROLLBACK;
+
+-- 2) ON DELETE CASCADE : 부모데이터 삭제시, 해당 데이터를 쓰고 있는 자식 데이터 값까지 모두 삭제!!
+
+DROP TABLE MEM;
+
+CREATE TABLE MEM(
+    MEM_NO NUMBER PRIMARY KEY,
+    MEM_ID VARCHAR2(20) NOT NULL UNIQUE,
+    MEM_PWD VARCHAR2(20) NOT NULL,
+    MEM_NAME VARCHAR2(20) NOT NULL,
+    GENDER CHAR(3) CHECK (GENDER IN ('남', '여')),
+    PHONE CHAR(13),
+    EMAIL VARCHAR(50),
+    GRADE_ID NUMBER REFERENCES MEM_GRADE(GRADE_CODE) ON DELETE CASCADE
+);
+
+INSERT INTO MEM VALUES(1,'USER01','PASS01','홍길동',NULL,NULL,NULL,10);
+INSERT INTO MEM VALUES(2,'USER02','PASS02','김말똥','남',NULL,NULL,20);
+INSERT INTO MEM VALUES(3,'USER03','PASS03','이순신',NULL,NULL,NULL,10);
+INSERT INTO MEM VALUES(4,'USER04','PASS04','안중근',NULL,NULL,NULL,NULL);
+
+SELECT * FROM MEM;
+SELECT * FROM MEM_GRADE;
+
+DELETE FROM MEM_GRADE 
+WHERE GRADE_CODE = 10;  --> 잘 삭제됨!(단, 해당 데이터 사용하는 자식 데이터도 모두 삭제됨!!) 
+
+-------------------------------------------------------------------------------------------
+
+/*
+    <DEFAULT 기본값>
+    
+    컬럼 지정하지 않고, INSERT 시 기본값을 INSERT하고자 할 때 세팅 해 놓을 수 있는 값
+    (제약 조건은 아니다.)
+*/
+DROP TABLE MEMBER;
+
+CREATE TABLE MEMBER (
+    MEM_NO NUMBER PRIMARY KEY,
+    MEM_NAME VARCHAR2(20),
+    MEM_AGE NUMBER DEFAULT 20,
+    MEM_DATE DATE DEFAULT SYSDATE 
+);
+
+SELECT * FROM MEMBER;
+-- INSERT INTO 테이블명 VALUES();
+INSERT INTO MEMBER VALUES(1,'홍길동',20,SYSDATE);
+
+-- INSERT INTO 테이블명(컬럼값, 컬럼값) VALUES(컬럼값, 컬럼값);
+INSERT INTO MEMBER(MEM_NO, MEM_NAME) VALUES(2, '김말순');
+--> 지정 안된 컬럼에는 기본적으로 NULL 값이 들어감!
+--> 해당 그 컬럼에 DEFAULT값이 부여 되어있다면, DEFAULT값이 들어간다!!
+
+-- 상품에 대한 데이터를 보관할 테이블(상품번호, 상품명, 브랜드명, 가격, 재고수량)
+
+CREATE TABLE PRODUCT(
+    PRODUCT_NO NUMBER PRIMARY KEY,
+    PRODUCT_NAME VARCHAR2(30) NOT NULL,
+    BRAND VARCHAR2(20) NOT NULL,
+    PRICE NUMBER,
+    STOCK NUMBER DEFAULT 10
+);
+
+INSERT INTO PRODUCT VALUES(1,'갤럭시','삼성',1300000,100);
+INSERT INTO PRODUCT(PRODUCT_NO, PRODUCT_NAME, BRAND) VALUES(2,'아이폰12PRO','애플');
+INSERT INTO PRODUCT VALUES(3,'아이패드','애플',2500000, DEFAULT);
+
+SELECT * FROM PRODUCT;
+
+---------------------------------------------------------------------------------
+
+/*
+    !!!!!!!!!!!!!!!!!!!!!!!!!!! KH계정에서 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    
+    <SUBQUERY 이용한 테이블 생성(테이블 복사)>
+    
+    [표현식]
+    CREATE TABLE 테이블명
+    AS 서브쿼리;
+    
+*/
+
+-- EMPLOYEE 테이블 복제한 새로운 테이블 생성
+CREATE TABLE EMPLOYEE_COPY
+AS SELECT * FROM EMPLOYEE;
+--> 컬럼, 담겨있는 데이터값, 제약조건 같은 경우는 NOT NULL만 복사됨!
+SELECT * FROM EMPLOYEE_COPY;
+
+
+CREATE TABLE EMPLOYEE_COPY2
+AS SELECT EMP_ID, EMP_NAME, SALARY, BONUS
+    FROM EMPLOYEE
+    WHERE 1=0;  -->구조만 복사 , 데이터 복사하고 싶지 않을 때!
+    
+SELECT * FROM EMPLOYEE_COPY2; 
+
+CREATE TABLE EMPLOYEE_COPY3
+AS SELECT EMP_ID, EMP_NAME,SALARY, SALARY*12 "연봉"
+    FROM EMPLOYEE;
+--> 서브쿼리 SELECT절에 산술연산식 또는 함수식 기술된 경우 반드시 별칭 지정해야함!    
+    
+SELECT * FROM EMPLOYEE_COPY3; 
+
+---------------------------------------------------------------------------------
+
+
 
