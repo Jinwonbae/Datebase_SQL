@@ -569,6 +569,29 @@ AS SELECT EMP_ID, EMP_NAME,SALARY, SALARY*12 "연봉"
 SELECT * FROM EMPLOYEE_COPY3; 
 
 ---------------------------------------------------------------------------------
+/*
+        * 테이블 생성된 후 뒤늦게 제약조건 추가
+        
+        - PRIMARY KEY : ALTER TABLE 테이블명 ADD PRIMARY KEY(컬럼명);
+        - FOREIGN KEY : ALTER TABLE 테이블명 ADD FOREIGN KEY(컬럼명) REFERENCES 참조할 테이블명(참조할 컬럼명); 
+        - UNIQUE      : ALTER TABLE 테이블명 ADD UNIQUE;
+        - CHECK       : ALTER TABLE 테이블명 ADD CHECK(컬럼에 대한 조건); 
+        - NOT NULL    : ALTER TABLE 테이블명 MODIFY 컬럼명 NOT NULL;
+        
+        
+        
+*/
 
+-- EMPLOYEE_COPY 테이블에 없는 PRIMARY KEY 제약조건 추가 (EMP_ID)
+ALTER TABLE EMPLOYEE_COPY ADD PRIMARY KEY(EMP_ID);
 
+-- EMPLOYEE 테이블에 DEPT_CODE에 외래키 추가
+-- 참조하는 테이블(부모테이블) : DEPARTMENT(DEPT_ID)
+ALTER TABLE EMPLOYEE ADD FOREIGN KEY(DEPT_CODE) REFERENCES DEPARTMENT (DEPT_ID);
 
+-- EMPLOYEE 테이블에 JOB_CODE에 외래키 추가
+-- 참조하는 테이블(부모테이블) : JOB(JOB_CODE)
+ALTER TABLE EMPLOYEE ADD FOREIGN KEY(JOB_CODE) REFERENCES JOB (JOB_CODE);
+
+-- DEPARTMENT 테이블 LOCATION_ID 외래키 제약조건 추가
+ALTER TABLE DEPARTMENT ADD FOREIGN KEY(LOCATION_ID) REFERENCES LOCATION (LOCAL_CODE);
