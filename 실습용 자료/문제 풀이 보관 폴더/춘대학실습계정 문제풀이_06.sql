@@ -30,7 +30,37 @@ CREATE TABLE TB_DEPT_KOR
  -- 5. 
  UPDATE TB_STUDENT
  SET STUDENT_ADDRESS = '서울시 종로구 숭인동 181-21'
- WHERE
+ WHERE STUDENT_NAME = '박건우';
  
+ 
+ -- 6.
+ UPDATE TB_STUDENT
+ SET STUDENT_SSN = SUBSTR(STUDENT_SSN,1,6);
+ 
+ 
+ 
+ --7.
+ UPDATE TB_GRADE
+ SET POINT = 3.5
+ WHERE POINT = (SELECT POINT 
+                FROM TB_STUDENT S, TB_CLASS C, TB_GRADE G, TB_DEPARTMENT D
+                WHERE S.STUDENT_NO = G.STUDENT_NO
+                    AND C.CLASS_NO = G.CLASS_NO
+                    AND S.DEPARTMENT_NO = D.DEPARTMENT_NO
+                    AND S.STUDENT_NAME = '김명훈'
+                    AND D.DEPARTMENT_NAME = '의학과'
+                    AND C.CLASS_NAME = '피부생리학'
+                    AND TERM_NO = '200501');
+
+COMMIT;
+
+ --8.
+ DELETE FROM TB_GRADE
+ WHERE STUDENT_NO IN (SELECT STUDENT_NO
+                     FROM TB_STUDENT
+                     WHERE ABSENCE_YN = 'Y');
+ 
+ 
+
          
  
