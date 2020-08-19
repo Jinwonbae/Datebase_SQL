@@ -121,9 +121,103 @@ VALUES (SEQ_PCODE.NEXTVAL,'대륙폰','샤오미',600000,20);
 
 COMMIT;
 
-CREATE TABLE PRO_DETAIL(
-       DCODE NUMBER PRIMARY KEY,
-       
-       
+
+-- 2. 상품 입출고 상세 이력 테이블 (TB_PRODETAIL)
+--    어떤 상품이 어떤 날 몇개가 입고 또는 출고가 되었는지 기록하는 테이블
+CREATE TABLE TB_PRODETAIL(
+        DCODE NUMBER PRIMARY KEY,
+        PCODE NUMBER,
+        PDATE DATE,
+        AMOUNT NUMBER,
+        STATUS VARCHAR2(10) CHECK (STATUS IN ('입고', '출고')),
+        FOREIGN KEY (PCODE) REFERENCES TB_PRODUCT(PCODE)
 );
+
+-- 상세코드로 새로운 번호를 발생시키는 시퀀스 (SEQ_DCODE)
+CREATE SEQUENCE SEQ_DECODE;
+
+-- 1번 상품이 오늘날짜로 10개 입고
+INSERT INTO TB_PRODETAIL
+VALUES (SEQ_DECODE.NEXTVAL
+        , 1
+        , SYSDATE
+        , 10
+        , '입고');
+
+-- 재고수량도 변경해야함
+UPDATE TB_PRODUCT
+    SET STOCK = STOCK + 10
+    WHERE PCODE = 1;
+    
+
+COMMIT;
+
+-- 2번 상품이 오늘날짜로 20개 입고
+INSERT INTO TB_PRODETAIL
+VALUES (SEQ_DECODE.nextval
+      , 2
+      , SYSDATE
+      , 20
+      , '입고');
+
+UPDATE TB_PRODUCT
+    SET STOCK = STOCK + 20
+    WHERE PCODE = 2;
+
+COMMIT;
+
+
+-- 1번 상품이 오늘날짜로 3개 출고
+INSERT INTO TB_PRODETAIL
+VALUES ( SEQ_DECODE.NEXTVAL
+       , 1
+       , SYSDATE
+       , 3
+       , '출고');
+
+-- 재고 수량도 변경
+UPDATE TB_PRODUCT
+    SET STOCK = STOCK - 3
+    WHERE PCODE = 1;
+
+
+SELECT * FROM TB_PRODUCT;
+
+-- TB_PRODETAIL 테이블에 데이터 삽입 (INSERT) 후
+-- TB_PRODUCT 테이블에 매번 자동으로 재고 수량 UPDATE 되게끔 트리거 정의
+CREATE OR REPLACE TRIGGER TRG_02
+AFTER INSERT ON TB_PRODETAIL
+FOR EACH ROW -- 행트리거    
+BEGIN
+
+   -- 상품이 입고된 경우    --> 재고수량 증가
+    IF (:NEW.STATUS = '입고')
+    THEN 
+        UPDATE TB_PRODUCT 
+        SET STOCK = STOCK + :NEW.AMOUNT
+        WHERE PCODE = :NEW.PCODE;
+    END IF;    
+    
+   -- 상품이 출고된 경우    --> 재고수량 감소
+    IF (:NEW.STATUS = '출고')
+    THEN
+        UPDATE TB_PRODUCT
+        SET STOCK = STOCK - :NEW.AMOUNT
+        WHERE PCODE = :NEW.PCODE;
+    END IF;    
+
+END;
+/
+
+
+-- 3번 상품이 오늘날짜로 9개 출고
+INSERT INTO TB_PRODETAIL
+VALUES(SEQ_DECODE.NEXTVAL,3,SYSDATE, 9, '출고');
+
+-- 2번 상품이 오늘날짜로 100개 입고
+INSERT INTO TB_PRODETAIL
+VALUES (SEQ_DECODE.NEXTVAL,2,SYSDATE,100,'입고');
+
+SELECT * FROM TB_PRODUCT;
+
 
