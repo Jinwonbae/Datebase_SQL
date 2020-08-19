@@ -148,16 +148,16 @@ WHERE PLAYER_NAME = '정현수';
 --12. PLAYER 테이블에서 각 팀에 속한 선수들 중 소속된 팀의 평균 신장보다 신장 길이가 작은
 --   선수들의 팀명, 선수명, 포지션, 등번호, 신장 길이를 조회하시오.
 
-SELECT TEAM_NAME, PLAYER_NAME, BACK_NO, HEIGHT
+SELECT T.TEAM_NAME, P.PLAYER_NAME, P.BACK_NO, P.HEIGHT
 
 FROM PLAYER P
    , TEAM T
 
 WHERE P.TEAM_ID = T.TEAM_ID
-    AND (TEAM_ID, HEIGHT) < (SELECT TEAM_ID, AVG(HEIGHT)
+    AND HEIGHT < (SELECT TEAM_ID, AVG(HEIGHT)
                   FROM PLAYER
-                  GROUP BY TEAM_ID);
-
+                  GROUP BY TEAM_ID)
+GROUP BY P.TEAM_ID;
 
 
 
