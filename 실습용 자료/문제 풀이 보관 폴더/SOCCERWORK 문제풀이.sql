@@ -154,24 +154,74 @@ FROM PLAYER P
    , TEAM T
 
 WHERE P.TEAM_ID = T.TEAM_ID
-    AND HEIGHT < (SELECT TEAM_ID, AVG(HEIGHT)
+    AND HEIGHT < ANY (SELECT AVG(HEIGHT)
                   FROM PLAYER
-                  GROUP BY TEAM_ID)
-GROUP BY P.TEAM_ID;
-
-
+                  GROUP BY TEAM_ID);
 
 --13. 선수의 이름과 포지션, 등번호, 팀ID, 팀명을 조회하는 뷰(V_TEAM_PLAYER)를 하나 생성한 뒤
 --     생성한 뷰를 활용하여 '황'씨성을 가진 선수들의 정보를 조회하시오.
---
+CREATE VIEW V_TEAM_PLAYER
+AS SELECT PLAYER_NAME, POSITION, BACK_NO, TEAM_ID, TEAM_NAME
+FROM PLAYER
+JOIN TEAM USING(TEAM_ID);
+
+SELECT *
+FROM V_TEAM_PLAYER
+WHERE PLAYER_NAME LIKE '황%';
+
+
 --14. 울산 현대 팀에 '박주호' 선수가 새로 영입되었다.
 --     해당 선수의 정보 중 포지션은 DF이며 1987년 3월 16일생, 신장과 몸무게가 각각 176cm, 75kg으로 
 --     나간다고 했을 때, 박주호 선수의 선수ID를 기존 선수들 중 가장 큰 숫자를 지닌 선수에서 
 --     숫자를 하나 증가시켜 추가할 수 있는 쿼리를 작성하시오.
---
+SELECT TEAM_ID, TEAM_NAME, MAX(PLAYER_ID)
+FROM TEAM
+JOIN PLAYER USING(TEAM_ID)
+WHERE TEAM_NAME LIKE '울산%'
+GROUP BY TEAM_NAME,TEAM_ID; -->  K01,울산현대,2012130
+
+
+CREATE SEQUENCE SEQ_PLAYER_ID
+START WITH 2012137
+INCREMENT BY 1;
+
+
+INSERT INTO PLAYER(PLAYER_ID, PLAYER_NAME, TEAM_ID, POSITION, BIRTH_DATE, HEIGHT, WEIGHT)
+VALUES (SEQ_PLAYER_ID.NEXTVAL,'박주호','K01','DF','19870616',176,75);
+
 --15. SCHEDULE에 기록된 정보들 중 가장 높은 골이 기록된 경기들의 날짜와 경기장 명, 
 --     HOME팀과 AWAY팀의 팀 명과 각 팀이 기록한 골의 수를 조회하시오.
 --
+SELECT SCHE_DATE
+     , STADIUM_NAME
+     , C.TEAM_NAME "HOME 팀"
+     , HOME_SCORE
+     , D.TEAM_NAME "AWAY 팀"
+     , AWAY_SCORE
+
+FROM SCHEDULE A
+JOIN STADIUM B USING(STADIUM_ID)
+LEFT JOIN TEAM C ON (A.HOMETEAM_ID = C.TEAM_ID)
+LEFT JOIN TEAM D ON (A.AWAYTEAM_ID = D.TEAM_ID)
+
+WHERE HOME_SCORE = (SELECT MAX(HOME_SCORE)FROM SCHEDULE)
+     OR AWAY_SCORE = (SELECT MAX(AWAY_SCORE)FROM SCHEDULE);
+
+
+COMMIT;
+
+
+
 --16. 최근 한국 스폰서들의 경제상황이 안 좋아져 팀 구단 중 현재 선수가 3명 이하인 구단을
 --    정리하게 되었다. TEAM 테이블을 활용하여 현재 소속된 선수가 3명 이하인 구단을 찾아
 --    해당 데이터를 삭제하는 쿼리를 작성하시오.
+
+DELETE FROM TEAM
+WHERE TEAM_NAME IN (SELECT TEAM_NAME
+                    FROM PLAYER
+                    JOIN TEAM USING(TEAM_ID)
+                    GROUP BY TEAM_NAME
+                    HAVING COUNT(*) <= 3);
+
+ALTER TABLE PLAYER DROP CONSTRAINT PLAYER_FK;
+
